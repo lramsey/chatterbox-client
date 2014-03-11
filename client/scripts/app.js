@@ -1,12 +1,11 @@
 // YOUR CODE HERE:
-
-var myName = window.location.search.substring(10);
-var myRoom = "4chan";
-var lastMessageTime = (new Date(0)).toJSON();
-var rooms = {};
-
 $(document).ready(function () {
   var msgObj = {};
+  var myName = window.location.search.substring(10);
+  var myRoom = "4chan";
+  var lastMessageTime = (new Date(0)).toJSON();
+  var rooms = {};
+
 
   var postMSG = function (message) {
     $.ajax({
@@ -70,7 +69,7 @@ $(document).ready(function () {
       type: 'GET',
       data: {
         order: '-createdAt',
-        limit: 500, 
+        limit: 500,
         where: JSON.stringify({
           createdAt: { $gt: {"__type": "Date", iso: lastMessageTime}}
         })
@@ -88,7 +87,9 @@ $(document).ready(function () {
 
   var roomFormat = function (results) {
     for (var i = 0; i < results.length; i++) {
-      rooms[results[i].roomname] = false;   // default false, meaning not yet appended
+      if(rooms[results[i].roomname] === undefined){
+        rooms[results[i].roomname] = false;   // default false, meaning not yet appended
+      }
     }
     for (var roomname in rooms) {
       // added if clause so that only rooms that have not been added will be appended
@@ -100,6 +101,20 @@ $(document).ready(function () {
       }
     }
   };
+
+  var goToRoom = function () {
+    $("h2.room").text(myRoom);
+    $("div.messages").children().remove();
+    lastMessageTime = (new Date(0)).toJSON();
+    getMessages();
+  };
+
+  // changing rooms by clicking on room names
+  $('.activeRooms').on('click', '.roomname',function (e) {
+    myRoom = $(this).text();
+    console.log("room: " +$(this).text());
+    goToRoom();
+  });
 
   // sending messages
   $('button.send').on('click', function (e) {
@@ -119,11 +134,7 @@ $(document).ready(function () {
   // retrieving chatroom name
   $('.changeRoom').on("click", function (e) {
     myRoom = $('.chatroom').val() || "4chan";
-    $("h2.room").text(myRoom);
-    $("div.messages").children().remove();
-    lastMessageTime = (new Date(0)).toJSON();
-    getMessages();
-
+    goToRoom();
   });
 
  getActiveRooms();
