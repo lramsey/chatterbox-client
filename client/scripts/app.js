@@ -5,6 +5,21 @@ var myName = window.location.search.substring(10);
 $(document).ready(function () {
   var msgObj = {};
 
+  var sendMsg = function (message) {
+    $.ajax({
+      url: 'https://api.parse.com/1/classes/chatterbox',
+      type: "POST",
+      data: JSON.stringify(message),
+      contentType: 'application/json',
+      success: function (data) {
+        console.log("message SENT!", data);
+      },
+      error: function (data) {
+        console.log("message not sent!", data);
+      }
+    });
+  };
+
   $('button').on('click', function (e) {
     e.preventDefault();
 
@@ -12,8 +27,40 @@ $(document).ready(function () {
     msgObj.text = text;
     msgObj.username = myName;
     msgObj.roomname = '4chan';
-    console.log(msgObj);
+
+    sendMsg(msgObj);
   });
+
+
+  var formatMessages = function(results){
+    var messages = results;
+    _.each(messages, function(message){
+      var text = message.text;
+      var username = message.username;
+      var createdAt = message.createdAt;
+      var messageContent = username + ": " + text + "  " + createdAt;
+      console.log(messageContent);
+      $('<li></li>').text(messageContent).appendTo($('ul'));
+    });
+  };
+
+  var postRetrieval = function(){
+    $.ajax({
+      url: 'https://api.parse.com/1/classes/chatterbox',
+      type: 'GET',
+      data: 'order=-createdAt',
+
+      success: function (data) {
+        console.log("unparsed: ", data);
+        formatMessages(data["results"]);
+          },
+      error: function (data) {
+        console.log('not retrieved');
+      }
+    });
+  };
+
+  setInterval(postRetrieval, 3000);
 });
 
 
