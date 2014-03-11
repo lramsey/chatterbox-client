@@ -1,6 +1,8 @@
 // YOUR CODE HERE:
 
 var myName = window.location.search.substring(10);
+var myRoom = "4chan";
+var lastMessageTime = (new Date(0)).toJSON();
 
 $(document).ready(function () {
   var msgObj = {};
@@ -20,51 +22,73 @@ $(document).ready(function () {
     });
   };
 
-  $('button').on('click', function (e) {
-    e.preventDefault();
-
-    var text = $('input').val();
-    msgObj.text = text;
-    msgObj.username = myName;
-    msgObj.roomname = '4chan';
-
-    sendMsg(msgObj);
-  });
-
-  var removeMessage = function () {
-    $('ul').children().last().remove();
+  var removeLastMessage = function () {
+    $('div.messages').children().last().remove();
   };
 
   var formatMessages = function(results){
-    var messages = results;
     for(var i = results.length-1; i >= 0; i--) {
-      var text = messages[i].text;
-      var username = messages[i].username;
-      var createdAt = messages[i].createdAt;
+      var text = results[i].text;
+      var username = results[i].username;
+      var createdAt = results[i].createdAt;
       var messageContent = username + ": " + text + "  " + createdAt;
-      $('<li></li>').text(messageContent).prependTo($('ul'));
-      if ($('ul').children().length >= 25) {
-        removeMessage();
+      $('<p></p>').text(messageContent).prependTo($('div.messages'));
+      if ($('div.messages').children().length >= 25) {
+        removeLastMessage();
       }
     }
+    lastMessageTime = results[0].createdAt;
   };
 
   var postRetrieval = function(){
     $.ajax({
       url: 'https://api.parse.com/1/classes/chatterbox',
       type: 'GET',
-      data:'order=-createdAt',
+      data: {
+        order: '-createdAt',
+        where: JSON.stringify({
+          roomname: myRoom,
+          createdAt: { $gt: {"__type": "Date", iso: lastMessageTime}}
+        })
+      },
       success: function (data) {
-        formatMessages(data["results"]);
-          },
+        if(data.results.length > 0){
+          formatMessages(data["results"]);
+        }
+      },
       error: function (data) {
         console.log('not retrieved');
       }
     });
   };
+
+  // sending messages
+  $('button.send').on('click', function (e) {
+    var text = $('.draft').val();
+    msgObj.text = text;
+    msgObj.username = myName;
+    msgObj.roomname = myRoom;
+
+    sendMsg(msgObj);
+  });
+
+  // retrieving username from input box
+  $('.username').on("keyup", function(){
+      myName = $(this).val() || window.location.search.substring(10);
+  });
+
+  // retrieving chatroom name
+  $('.changeRoom').on("click", function (e) {
+    myRoom = $('.chatroom').val() || "4chan";
+    $("h2.room").text(myRoom);
+    $("div.messages").children().remove();
+    lastMessageTime = (new Date(0)).toJSON();
+    postRetrieval();
+
+  });
+ postRetrieval();
  setInterval(postRetrieval, 3000);
 });
-
 
 /*
 var message = {
