@@ -31,38 +31,29 @@ $(document).ready(function () {
     sendMsg(msgObj);
   });
 
-  var lastMessageTime;
-
   var removeMessage = function () {
     $('ul').children().last().remove();
   };
 
   var formatMessages = function(results){
     var messages = results;
-    _.each(messages, function(message){
-      var text = message.text;
-      var username = message.username;
-      var createdAt = message.createdAt;
+    for(var i = results.length-1; i >= 0; i--) {
+      var text = messages[i].text;
+      var username = messages[i].username;
+      var createdAt = messages[i].createdAt;
       var messageContent = username + ": " + text + "  " + createdAt;
-      $('<li></li>').text(messageContent).prependTo($('ul')); //prepend?
-      if ($('ul').children().length >= 26) {
+      $('<li></li>').text(messageContent).prependTo($('ul'));
+      if ($('ul').children().length >= 25) {
         removeMessage();
       }
-    });
-    lastMessageTime = messages[0]['createdAt'];
-    setTimeout(function(){
-      postRetrieval(lastMessageTime);
-    }, 3000);
-    console.log(lastMessageTime);
+    }
   };
 
-  var postRetrieval = function(messageTime){
-    var filter = 'where={"createdAt":{"$gte":{"__type":"Date","iso":' + JSON.stringify(messageTime) + '}}}';
-    // "2011-08-21T18:02:52.249Z"
+  var postRetrieval = function(){
     $.ajax({
       url: 'https://api.parse.com/1/classes/chatterbox',
       type: 'GET',
-      data: filter,//'order=-createdAt'
+      data:'order=-createdAt',
       success: function (data) {
         formatMessages(data["results"]);
           },
@@ -71,10 +62,7 @@ $(document).ready(function () {
       }
     });
   };
- postRetrieval((new Date(0)).toJSON());
- /* setInterval(function(lastMessageTime){
-    postRetrieval(lastMessageTime);
-  }, 3000);*/
+ setInterval(postRetrieval, 3000);
 });
 
 
