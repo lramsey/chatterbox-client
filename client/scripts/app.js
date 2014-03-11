@@ -70,7 +70,7 @@ $(document).ready(function () {
       type: 'GET',
       data: {
         order: '-createdAt',
-        limit: 500,
+        limit: 500, 
         where: JSON.stringify({
           createdAt: { $gt: {"__type": "Date", iso: lastMessageTime}}
         })
@@ -88,10 +88,16 @@ $(document).ready(function () {
 
   var roomFormat = function (results) {
     for (var i = 0; i < results.length; i++) {
-      rooms[results[i].roomname] = true;
+      rooms[results[i].roomname] = false;   // default false, meaning not yet appended
     }
     for (var roomname in rooms) {
-      $('<span></span>').text(roomname).appendTo($('div.activeRooms'));
+      // added if clause so that only rooms that have not been added will be appended
+      if (!rooms[roomname]) {
+        // changed to div (from span) so that rooms appear on side (because too many rooms on top)
+        // added class 'roomname' to each room div
+        $('<div></div>').addClass('roomname').text(roomname).appendTo($('div.activeRooms'));
+        rooms[roomname] = true;
+      }
     }
   };
 
@@ -124,7 +130,7 @@ $(document).ready(function () {
  getMessages();
 
  setInterval(function () {
-   getActiveRooms();
    getMessages();
+   getActiveRooms();
  }, 3000);
 });
