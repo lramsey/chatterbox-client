@@ -31,6 +31,11 @@ $(document).ready(function () {
     sendMsg(msgObj);
   });
 
+  var lastMessageTime;
+
+  var removeMessage = function () {
+    $('ul').children().last().remove();
+  };
 
   var formatMessages = function(results){
     var messages = results;
@@ -39,19 +44,26 @@ $(document).ready(function () {
       var username = message.username;
       var createdAt = message.createdAt;
       var messageContent = username + ": " + text + "  " + createdAt;
-      console.log(messageContent);
-      $('<li></li>').text(messageContent).appendTo($('ul'));
+      $('<li></li>').text(messageContent).prependTo($('ul')); //prepend?
+      if ($('ul').children().length >= 26) {
+        removeMessage();
+      }
     });
+    lastMessageTime = messages[0]['createdAt'];
+    setTimeout(function(){
+      postRetrieval(lastMessageTime);
+    }, 3000);
+    console.log(lastMessageTime);
   };
 
-  var postRetrieval = function(){
+  var postRetrieval = function(messageTime){
+    var filter = 'where={"createdAt":{"$gte":{"__type":"Date","iso":' + JSON.stringify(messageTime) + '}}}';
+    // "2011-08-21T18:02:52.249Z"
     $.ajax({
       url: 'https://api.parse.com/1/classes/chatterbox',
       type: 'GET',
-      data: 'order=-createdAt',
-
+      data: filter,//'order=-createdAt'
       success: function (data) {
-        console.log("unparsed: ", data);
         formatMessages(data["results"]);
           },
       error: function (data) {
@@ -59,8 +71,10 @@ $(document).ready(function () {
       }
     });
   };
-
-  setInterval(postRetrieval, 3000);
+ postRetrieval((new Date(0)).toJSON());
+ /* setInterval(function(lastMessageTime){
+    postRetrieval(lastMessageTime);
+  }, 3000);*/
 });
 
 
