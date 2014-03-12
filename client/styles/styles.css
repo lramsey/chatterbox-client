@@ -90,3 +90,11 @@ form input[type=text] {
   float: left;
   font-size: 12px;
 }
+
+p.friend {
+  color: blue;
+}
+
+span.friend {
+  color: green;
+}

@@ -5,7 +5,8 @@ $(document).ready(function () {
   var myRoom = "4chan";
   var lastMessageTime = (new Date(0)).toJSON();
   var rooms = {};
-
+  var friends = {};
+  var banned = {};
 
   var postMSG = function (message) {
     $.ajax({
@@ -28,11 +29,19 @@ $(document).ready(function () {
 
   var formatMessages = function(results){
     for(var i = results.length-1; i >= 0; i--) {
+      var $paragraph = $('<p></p>');
       var text = results[i].text;
-      var username = results[i].username;
+      var $username = $('<span></span>').text(results[i].username).addClass(results[i].username);
+
+      if (friends[results[i].username] === true) {
+        $username.addClass('friend');
+        $paragraph.addClass('friend');
+      }
       var createdAt = results[i].createdAt;
-      var messageContent = username + ": " + text + "  " + createdAt;
-      $('<p></p>').text(messageContent).prependTo($('div.messages'));
+      var messageContent =  ": " + text + "  " + createdAt;
+
+      $('div.messages').prepend($paragraph.text(messageContent).prepend($username));
+
       if ($('div.messages').children().length >= 25) {
         removeLastMessage();
       }
@@ -112,7 +121,7 @@ $(document).ready(function () {
   // changing rooms by clicking on room names
   $('.activeRooms').on('click', '.roomname',function (e) {
     myRoom = $(this).text();
-    console.log("room: " +$(this).text());
+    console.log("room: " + $(this).text());
     goToRoom();
   });
 
@@ -135,6 +144,13 @@ $(document).ready(function () {
   $('.changeRoom').on("click", function (e) {
     myRoom = $('.chatroom').val() || "4chan";
     goToRoom();
+  });
+
+  // friending 
+  $('div.messages').on('click', 'span', function (e) {
+    var name = $(this).text();
+    friends[name] = true;
+    $('.' + name).addClass('friend').parent().addClass('friend');
   });
 
  getActiveRooms();
