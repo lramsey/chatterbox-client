@@ -6,6 +6,7 @@ body {
 }
 
 #main {
+    float: left;
     width: 500px;
     margin: auto;
     text-align: left;
@@ -81,4 +82,19 @@ form input[type=text] {
 
 .spinner img {
     padding: 10px;
+}
+
+.activeRooms {
+  width: 200px;
+  text-align: left;
+  float: left;
+  font-size: 12px;
+}
+
+p.friend {
+  color: blue;
+}
+
+span.friend {
+  color: green;
 }
