@@ -4,7 +4,8 @@ if (!/(&|\?)username=/.test(window.location.search)) {
   if (newSearch !== '' & newSearch !== '?') {
     newSearch += '&';
   }
-  newSearch += 'username=' + (prompt('What is your name?') || 'anonymous');
+  newSearch += 'username=' + (prompt('What is your name?') || 'anonymous') 
+  + "?roomname=room1";
   window.location.search = newSearch;
   
 }

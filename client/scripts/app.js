@@ -1,8 +1,11 @@
 // YOUR CODE HERE:
 $(document).ready(function () {
   var msgObj = {};
-  var myName = window.location.search.substring(10);
-  var myRoom = "4chan";
+  var endNameIndex = window.location.search.lastIndexOf('?');
+  var roomIndex = window.location.search.lastIndexOf('=');
+  var myName = window.location.search.substring(10, endNameIndex);
+  var myRoom = window.location.search.substring(roomIndex+1);
+  console.log(myRoom);
   var lastMessageTime = (new Date(0)).toJSON();
   var rooms = {};
   var friends = {};
@@ -28,22 +31,37 @@ $(document).ready(function () {
   };
 
   var formatMessages = function(results){
-    for(var i = results.length-1; i >= 0; i--) {
-      var $paragraph = $('<p></p>');
-      var text = results[i].text;
-      var $username = $('<span></span>').text(results[i].username).addClass(results[i].username);
-
-      if (friends[results[i].username] === true) {
-        $username.addClass('friend');
-        $paragraph.addClass('friend');
+    var userPostCount = {};
+    for(var j = 0; j < results.length; j++){
+      if(userPostCount[results[j].username] === undefined){
+        userPostCount[results[j].username] = 1;
+      } else {
+        userPostCount[results[j].username]++;
       }
-      var createdAt = results[i].createdAt;
-      var messageContent =  ": " + text + "  " + createdAt;
+    }
+    for(var k = 0; k < results.length; k++){
+      if(userPostCount[results[k].username] > 10 ){
+        banned[results[k].username] = true;
+      }
+    }
+    for(var i = results.length-1; i >= 0; i--) {
+      if(banned[results[i].username] !== true){
+        var $paragraph = $('<p></p>');
+        var text = results[i].text;
+        var $username = $('<span></span>').text(results[i].username).addClass(results[i].username);
 
-      $('div.messages').prepend($paragraph.text(messageContent).prepend($username));
+        if (friends[results[i].username] === true) {
+          $username.addClass('friend');
+          $paragraph.addClass('friend');
+        }
+        var createdAt = results[i].createdAt;
+        var messageContent =  ": " + text + "  " + createdAt;
 
-      if ($('div.messages').children().length >= 25) {
-        removeLastMessage();
+        $('div.messages').prepend($paragraph.text(messageContent).prepend($username));
+
+        if ($('div.messages').children().length >= 25) {
+          removeLastMessage();
+        }
       }
     }
     lastMessageTime = results[0].createdAt;
@@ -112,6 +130,7 @@ $(document).ready(function () {
   };
 
   var goToRoom = function () {
+    window.open(window.location.href + "?roomname=" + myRoom,myRoom);
     $("h2.room").text(myRoom);
     $("div.messages").children().remove();
     lastMessageTime = (new Date(0)).toJSON();
