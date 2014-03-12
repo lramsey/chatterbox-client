@@ -53,6 +53,9 @@ $(document).ready(function () {
         if (friends[results[i].username] === true) {
           $username.addClass('friend');
           $paragraph.addClass('friend');
+        } else if (friends[results[i].username] === false) {
+          $username.removeClass('friend');
+          $paragraph.removeClass('friend');
         }
         var createdAt = results[i].createdAt;
         var messageContent =  ": " + text + "  " + createdAt;
@@ -130,11 +133,7 @@ $(document).ready(function () {
   };
 
   var goToRoom = function () {
-    window.open(window.location.href + "?roomname=" + myRoom,myRoom);
-    $("h2.room").text(myRoom);
-    $("div.messages").children().remove();
-    lastMessageTime = (new Date(0)).toJSON();
-    getMessages();
+    window.open(window.location.pathname + "?username=" + myName + "?roomname=" + myRoom,myRoom);
   };
 
   // changing rooms by clicking on room names
@@ -165,12 +164,18 @@ $(document).ready(function () {
     goToRoom();
   });
 
-  // friending 
+  // friending
   $('div.messages').on('click', 'span', function (e) {
     var name = $(this).text();
-    friends[name] = true;
-    $('.' + name).addClass('friend').parent().addClass('friend');
+    if(friends[name] !== true){
+      friends[name] = true;
+      $('.' + name).addClass('friend').parent().addClass('friend');
+    } else{
+      friends[name] = false;
+       $('.' + name).removeClass('friend').parent().removeClass('friend');
+    }
   });
+  $('h2.room').text(myRoom);
 
  getActiveRooms();
  getMessages();
